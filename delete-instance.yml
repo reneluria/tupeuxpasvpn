@@ -1,0 +1,14 @@
+---
+- hosts: aws_ec2
+  gather_facts: false
+  vars:
+    region: "ca-central-1"
+    groupname: "vpn"
+  tasks:
+    - name: 'Delete VM'
+      ec2:
+        instance_id: "{{ instance_id }}"
+        state: absent
+        region: "{{ region }}"
+      delegate_to: localhost
+      when: tags.groupname == groupname
