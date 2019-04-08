@@ -48,10 +48,20 @@ $ curl ipinfo.io
 
 And remove this instance when you're done:
 
+```
 ansible-playbook delete-instance.yml -e 'region=eu-west-2'
+```
 
+Notes
+-----
 
-Think of adapting the variables at the start of the playbook to match your ssh public key
+* Think of adapting the variables at the start of the playbook to match your ssh public key
+
+* The VM is created with a security group allowing only your public ip to connect to it
+
+* You need to set your aws cli config or EC2_ACCESS_KEY and EC2_SECRET_KEY variables
+
+* Feel free to adapt the template of the vpn script to make it less verbose and daemonize for example
 
 Author
 ------

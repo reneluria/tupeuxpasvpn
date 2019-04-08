@@ -21,11 +21,14 @@
       debug:
         msg: "Region: {{ region }}"
     - name: fetch public cidr_ip
-      command: "curl ipify.org"
+      command: "curl -s http://api.ipify.org"
       register: ipify
     - name: register public_ip
       set_fact:
         public_ip: "{{ ipify.stdout }}"
+    - name: show public ip
+      debug:
+        msg: "Our public facing ip is {{ public_ip }}"
     - name: 'Get image id'
       command: "aws ec2 describe-images --region={{ region }} --filter 'Name=name,Values={{ image_name }}'"
       register: ec2_image
@@ -51,12 +54,12 @@
             from_port: -1
             to_port:  -1
             cidr_ip:
-              - "{{ public_ip }}"
+              - "{{ public_ip }}/32"
           - proto: tcp
             from_port: 22
             to_port: 22
             cidr_ip:
-              - "{{ public_ip }}"
+              - "{{ public_ip }}/32"
         region: "{{ region }}"
     - name: 'Create VM'
       ec2:
