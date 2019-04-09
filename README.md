@@ -55,7 +55,7 @@ ansible-playbook delete-instance.yml -e 'region=eu-west-2'
 Notes
 -----
 
-* Think of adapting the variables at the start of the playbook to match your ssh public key
+* This recipe generates a ssh keypair for this purpose
 
 * The VM is created with a security group allowing only your public ip to connect to it
 

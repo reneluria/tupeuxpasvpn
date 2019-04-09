@@ -1,31 +1,29 @@
 ---
-- hosts: localhost
+- name: 'Create VM'
+  hosts: localhost
   gather_facts: false
   vars:
-    key:
-      name: 'myrsa'
-      pub: "{{ lookup('file', '/Users/luria/.ssh/id_rsa.pub') }}"
-    instance:
-      name: 'my-instance2'
+    key_name: 'tupeuxpasvpn'
     image_name: 'ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-20190212.1'
     groupname: 'vpn'
     instance_type: 't2.micro'
     region: 'ca-central-1'
     secgroup:
       name: 'from_myself'
-      description: 'icmp and ssh from home and vpn'
+      description: 'icmp and ssh from myself'
 
     delete: false
   tasks:
     - name: "Debug"
       debug:
         msg: "Region: {{ region }}"
+    - name: 'prepare folder'
+      file:
+        path: artifacts
+        state: directory
     - name: fetch public cidr_ip
-      command: "curl -s http://api.ipify.org"
-      register: ipify
-    - name: register public_ip
       set_fact:
-        public_ip: "{{ ipify.stdout }}"
+        public_ip: "{{ lookup('url', 'http://api.ipify.org') }}"
     - name: show public ip
       debug:
         msg: "Our public facing ip is {{ public_ip }}"
@@ -40,10 +38,14 @@
       set_fact:
         image_id: "{{ image_info.Images[0].ImageId }}"
     # - meta: end_play
+    - name: Create SSH keys
+      command: 'ssh-keygen -t rsa -f artifacts/id_rsa -P ""'
+      args:
+        creates: 'artifacts/id_rsa'
     - name: 'Create SSH keypair'
       ec2_key:
-        name: "{{ key.name }}"
-        key_material: "{{ key.pub }}"
+        name: "{{ key_name }}"
+        key_material: "{{ lookup('file', 'artifacts/id_rsa.pub') }}"
         region: "{{ region }}"
     - name: 'Create security group'
       ec2_group:
@@ -65,7 +67,7 @@
       ec2:
         group: "{{ secgroup.name }}"
         image: "{{ image_id }}"
-        key_name: "{{ key.name }}"
+        key_name: "{{ key_name }}"
         instance_type: "{{ instance_type }}"
         region: "{{ region }}"
         user_data: |
@@ -85,6 +87,7 @@
         groupname: "{{ groupname }}"
         ansible_host: "{{ item.public_ip }}"
         ansible_user: ubuntu
+        ansible_ssh_private_key_file: "artifacts/id_rsa"
         instance_id: "{{ item.id }}"
         tags:
           groupname: "{{ groupname }}"
@@ -100,25 +103,16 @@
         msg: "Instane {{ item.id }} at {{ item.public_ip }} / {{ item.public_dns_name }}"
       with_items: "{{ ec2.instances }}"
 
-- name: 'Create artifacts folder'
-  hosts: localhost
-  gather_facts: false
-
-  tasks:
-    - name: 'prepare folder'
-      file:
-        path: artifacts
-        state: directory
-
 - name: 'Create vpn script'
   hosts: all
-  gather_facts: false
+  gather_facts: true
+  remote_user: ubuntu
   tags:
     - script
   vars:
     groupname: 'vpn'
+    ansible_ssh_private_key_file: "artifacts/id_rsa"
   tasks:
-    - debug: var=ansible_facts
     - name: 'vpn script'
       template:
         src: start-vpn.sh.j2
