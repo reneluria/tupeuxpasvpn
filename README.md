@@ -11,6 +11,23 @@ Dependencies
 * ssh 
 * sshuttle https://github.com/sshuttle/sshuttle
 
+Installation
+------------
+
+Nothing to install if deps are already met.
+
+Otherwise:
+
+```
+pipenv shell
+```
+
+or
+
+```
+pip install -r requirements.txt
+```
+
 Usage
 -----
 
