@@ -4,10 +4,11 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-ansible = "*"
-boto = "*"
+ansible = "3.3.0"
+boto = "2.49.0"
+boto3 = "1.17.54"
 
 [dev-packages]
 
 [requires]
-python_version = "3.7"
+python_version = "3.8"
