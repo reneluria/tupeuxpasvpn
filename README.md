@@ -25,7 +25,10 @@ pipenv shell
 or
 
 ```
-pip install -r requirements.txt
+python3 -m venv venv
+. venv/bin/activate
+python3 -m pip install -U pip wheel
+python3 -m pip install -r requirements.txt
 ```
 
 Usage
@@ -34,7 +37,7 @@ Usage
 To create an ssh endpoint in London:
 
 ```
-ansible-playbook create-instance.yml -e 'region=eu-west-2'
+SSH_AUTH_SOCK= ansible-playbook create-instance.yml -e 'region=eu-west-2'
 ```
 
 It creates a vm in the given ec2 region and adds it to inventory.
